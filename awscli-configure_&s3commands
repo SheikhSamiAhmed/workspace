@@ -1,0 +1,57 @@
+AWS cli installation n linux server
+-----------------------------------------
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+
+
+AWS cli installation n windows server
+-----------------------------------------
+
+
+msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+
+
+AWS CLI CONFIGURATION
+
+------------------------------------------------------------------------
+
+$ aws configure
+
+
+AWS Access Key ID [None]: [your access key ID]
+AWS Secret Access Key [None]: [your secret key]
+Default region name [None]: 
+Default output format [None]: 
+
+
+
+Note: you need to provide only access key and secret key and hit enter for default region and default output format
+
+
+
+AWS S3 Commands
+
+----------------------------------------------
+
+$ aws s3 ls
+
+List items of a bucket
+$ aws s3 ls s3://deployment-utilities/
+
+List items of a folder of a bucket
+aws s3 ls s3://deployment-utilities/patches/
+
+
+Copy from Local to AWS S3 Bucket
+$ aws s3 cp IRIS_PATCH_5.4.20.5_5.4.20.7_223564.zip s3://deployment-utilities/
+
+
+
+Copy from S3 bucket to Local
+$ aws s3 cp s3://deployment-utilities/SuitePrereqs.zip .
+
+
+aws s3 cp s3://deployment-utilities/IRIS_PATCH_5.4.20.5_5.4.20.7_223564.zip .

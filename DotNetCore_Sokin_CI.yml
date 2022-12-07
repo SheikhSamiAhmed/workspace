@@ -1,0 +1,170 @@
+# 'Allow scripts to access the OAuth token' was selected in pipeline.  Add the following YAML to any steps requiring access:
+#       env:
+#           MY_ACCESS_TOKEN: $(System.AccessToken)
+# Variable 'baseURL' was defined in the Variables tab
+# Variable 'browser_name' was defined in the Variables tab
+# Variable 'certificatePassword' was defined in the Variables tab
+# Variable 'cmsWebsitePort' was defined in the Variables tab
+# Variable 'ConnType' was defined in the Variables tab
+# Variable 'corepassword' was defined in the Variables tab
+# Variable 'coreuser' was defined in the Variables tab
+# Variable 'customErrorsMode' was defined in the Variables tab
+# Variable 'cygwinPass' was defined in the Variables tab
+# Variable 'cygwinUser' was defined in the Variables tab
+# Variable 'DbSqlUserName' was defined in the Variables tab
+# Variable 'DbSqlUserPass' was defined in the Variables tab
+# Variable 'DbSqlUserSID' was defined in the Variables tab
+# Variable 'dockerHost' was defined in the Variables tab
+# Variable 'dockerHostPath' was defined in the Variables tab
+# Variable 'dockerPassword' was defined in the Variables tab
+# Variable 'dockerUser' was defined in the Variables tab
+# Variable 'Environment' was defined in the Variables tab
+# Variable 'irisAppPoolName' was defined in the Variables tab
+# Variable 'irisBranchPortalPort' was defined in the Variables tab
+# Variable 'irisBranchPortalWebsite' was defined in the Variables tab
+# Variable 'irisCMSWebSite' was defined in the Variables tab
+# Variable 'IrisCoreIP' was defined in the Variables tab
+# Variable 'IrisCorePort' was defined in the Variables tab
+# Variable 'IrisCorePortHSM' was defined in the Variables tab
+# Variable 'irisCRMVirtualDir' was defined in the Variables tab
+# Variable 'irisDbHost' was defined in the Variables tab
+# Variable 'irisDbPassword' was defined in the Variables tab
+# Variable 'irisDbPort' was defined in the Variables tab
+# Variable 'irisDbSid' was defined in the Variables tab
+# Variable 'irisDbUser' was defined in the Variables tab
+# Variable 'irisHome' was defined in the Variables tab
+# Variable 'irisHomeDotNet' was defined in the Variables tab
+# Variable 'irisHostPath' was defined in the Variables tab
+# Variable 'irisMerchantPortalPGWVirtualDir' was defined in the Variables tab
+# Variable 'irisMerchantPortalVirtualDir' was defined in the Variables tab
+# Variable 'irisPRPGWVirtualDir' was defined in the Variables tab
+# Variable 'irisServiceHostPath' was defined in the Variables tab
+# Variable 'irisSuiteHost' was defined in the Variables tab
+# Variable 'irisVirtualDirName' was defined in the Variables tab
+# Variable 'irisWebSite' was defined in the Variables tab
+# Variable 'irisWMSWebSite' was defined in the Variables tab
+# Variable 'KongAccessTokenURl' was defined in the Variables tab
+# Variable 'KongAdminUrl' was defined in the Variables tab
+# Variable 'KongApiUrl' was defined in the Variables tab
+# Variable 'kongtoken' was defined in the Variables tab
+# Variable 'logPath' was defined in the Variables tab
+# Variable 'manualAuthorizationWebService' was defined in the Variables tab
+# Variable 'MSBuild_x64' was defined in the Variables tab
+# Variable 'MultiLingualEnable' was defined in the Variables tab
+# Variable 'OS' was defined in the Variables tab
+# Variable 'password' was defined in the Variables tab
+# Variable 'PF86' was defined in the Variables tab
+# Variable 'puttyPath' was defined in the Variables tab
+# Variable 'quartzDatasource' was defined in the Variables tab
+# Variable 'quartzEndpointPort' was defined in the Variables tab
+# Variable 'QuartzServiceName' was defined in the Variables tab
+# Variable 'userid' was defined in the Variables tab
+# Variable 'websitePort' was defined in the Variables tab
+# Variable 'websiteProtocol' was defined in the Variables tab
+# Variable 'wmsWebsitePort' was defined in the Variables tab
+# Variable 'zipPath' was defined in the Variables tab
+# Variable 'zipPath2' was defined in the Variables tab
+# Variable 'DbPort' was defined in the Variables tab
+# Cron Schedules have been converted using UTC Time Zone and may need to be updated for your location
+schedules:
+- cron: 0 9 * * 5
+  branches:
+    include:
+    - $/Main
+  always: true
+name: $(BuildDefinitionName)_$(Date:yyyyMMdd)$(Rev:.r)
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/Feature/DotNet6_Latest
+jobs:
+- job: Phase_1
+  displayName: Phase 1
+  timeoutInMinutes: 500
+  cancelTimeoutInMinutes: 1
+  pool:
+    name: Observability Pool
+  steps:
+  - checkout: self
+    clean: true
+    persistCredentials: True
+  - task: CmdLine@1
+    displayName: Run set
+    inputs:
+      filename: set
+  - task: PowerShell@2
+    displayName: Copy Nuget Packages
+    inputs:
+      targetType: inline
+      script: >-
+        # Write your PowerShell commands here.
+
+
+        xcopy "$env:BUILD_SOURCESDIRECTORY\PrivateNugets\*" C:\OB\PrivateNugets\ /s /e /Y
+  - task: PowerShell@2
+    displayName: Clean Cache
+    inputs:
+      targetType: inline
+      script: >
+        # Write your PowerShell commands here.
+
+
+
+        cd C:\Nuget ; .\nuget.exe locals all -clear
+  - task: NuGetToolInstaller@1
+    displayName: Use NuGet 6.0.0
+    inputs:
+      versionSpec: 6.0.0
+  - task: NuGetCommand@2
+    displayName: NuGet restore CrossPlatformSuite Extention copy
+    inputs:
+      solution: CrossPlatformSuite\APIExtension\ExtensionAPIs\ExtensionAPIs.sln
+      selectOrConfig: config
+      feedRestore: 5d13bf39-bf09-476e-bf63-2cce71927bb7
+      nugetConfigPath: C:\Nuget\NuGet.Config
+      noCache: true
+  - task: NuGetCommand@2
+    displayName: NuGet restore CrossPlatformSuite Extention
+    inputs:
+      solution: CrossPlatformSuite\APIExtension\ExtensionAPIs\ExtensionAPIs.sln
+      feedRestore: 5d13bf39-bf09-476e-bf63-2cce71927bb7
+      nugetConfigPath: PrivateNugets/DigitalBanking.1.0.1.nupkg
+      noCache: true
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk '
+  - task: MSBuild@1
+    displayName: Dot Net Core IRISAPI.sln Extenstion
+    inputs:
+      solution: CrossPlatformSuite\APIExtension\ExtensionAPIs\ExtensionAPIs.sln
+      msbuildLocationMethod: location
+      msbuildArchitecture: x64
+      msbuildLocation: C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin\amd64
+      msbuildArguments: /p:OutputPath="$(Build.BinariesDirectory)\ExtensionAPI" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+  - task: DotNetCoreCLI@2
+    displayName: dotnet build for IRIS Extension
+    enabled: False
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: CrossPlatformSuite\APIExtension\ExtensionAPIs\ExtensionAPIs.sln
+      arguments: --self-contained=false --framework net6.0 --runtime linux-x64 /p:OutputPath="$(Build.BinariesDirectory)\ExtensionAPI" /p:RunCodeAnalysis=false /m
+      zipAfterPublish: false
+      modifyOutputPath: false
+      workingDirectory: C:\Program Files\Microsoft Visual Studio\2022\Community\dotnet\runtime
+  - task: DotNetCoreCLI@2
+    displayName: dotnet build for IRIS Extension copy
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: CrossPlatformSuite\APIExtension\ExtensionAPIs\ExtensionRESTAPIs\ExtensionRESTAPIs.csproj
+      arguments: --self-contained=false --framework net6.0 --runtime linux-x64 /p:OutputPath="$(Build.BinariesDirectory)\ExtensionAPI" /p:RunCodeAnalysis=false /m
+      zipAfterPublish: false
+      modifyOutputPath: false
+      workingDirectory: C:\Program Files\Microsoft Visual Studio\2022\Community\dotnet\runtime
+  - task: BatchScript@1
+    displayName: 'Assembling of Extension '
+    inputs:
+      filename: CI_CD/Continuous_Deployment/Web_Application/ExtensionAssembling.bat
+...
