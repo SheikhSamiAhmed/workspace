@@ -1,0 +1,325 @@
+# 'Allow scripts to access the OAuth token' was selected in pipeline.  Add the following YAML to any steps requiring access:
+#       env:
+#           MY_ACCESS_TOKEN: $(System.AccessToken)
+# Variable 'activitySchema' was defined in the Variables tab
+# Variable 'AGENTROOT' was defined in the Variables tab
+# Variable 'analysisSchema' was defined in the Variables tab
+# Variable 'Branch' was defined in the Variables tab
+# Variable 'Build.SyncSources' was defined in the Variables tab
+# Variable 'BuildServerIp' was defined in the Variables tab
+# Variable 'BuildServerLinuxIp' was defined in the Variables tab
+# Variable 'capSchema' was defined in the Variables tab
+# Variable 'cmsSchema' was defined in the Variables tab
+# Variable 'configSchema' was defined in the Variables tab
+# Variable 'coreCompilationPath' was defined in the Variables tab
+# Variable 'currentReleaseVersion' was defined in the Variables tab
+# Variable 'CUSTOMBRANCH' was defined in the Variables tab
+# Variable 'CUSTOMREPO' was defined in the Variables tab
+# Variable 'cygwinuser' was defined in the Variables tab
+# Variable 'DATABASE' was defined in the Variables tab
+# Variable 'dbAdminPasswd' was defined in the Variables tab
+# Variable 'dbAdminUser' was defined in the Variables tab
+# Variable 'DbFolderName' was defined in the Variables tab
+# Variable 'dbHost' was defined in the Variables tab
+# Variable 'dbHostPassword' was defined in the Variables tab
+# Variable 'dbHostUser' was defined in the Variables tab
+# Variable 'DbSqlUserName' was defined in the Variables tab
+# Variable 'DbSqlUserPass' was defined in the Variables tab
+# Variable 'DbSqlUserSID' was defined in the Variables tab
+# Variable 'dcoPath' was defined in the Variables tab
+# Variable 'EXTERNALLIBRARIESPATH' was defined in the Variables tab
+# Variable 'ftpHost' was defined in the Variables tab
+# Variable 'ftpHostPwd' was defined in the Variables tab
+# Variable 'ftpHostUser' was defined in the Variables tab
+# Variable 'ftpPort' was defined in the Variables tab
+# Variable 'GitLinuxIp' was defined in the Variables tab
+# Variable 'gitPath' was defined in the Variables tab
+# Variable 'hostPathDB' was defined in the Variables tab
+# Variable 'ibSchema' was defined in the Variables tab
+# Variable 'insightSchema' was defined in the Variables tab
+# Variable 'irisSchema' was defined in the Variables tab
+# Variable 'isCorePatch' was defined in the Variables tab
+# Variable 'isDBPatch' was defined in the Variables tab
+# Variable 'isSuitePatch' was defined in the Variables tab
+# Variable 'lookupSchema' was defined in the Variables tab
+# Variable 'newSchemaNames' was defined in the Variables tab
+# Variable 'ORACLE_VERSION' was defined in the Variables tab
+# Variable 'oracleVersion' was defined in the Variables tab
+# Variable 'patchVersion' was defined in the Variables tab
+# Variable 'paymentSchema' was defined in the Variables tab
+# Variable 'previousProductVersion' was defined in the Variables tab
+# Variable 'previousReleaseVersion' was defined in the Variables tab
+# Variable 'productType' was defined in the Variables tab
+# Variable 'puttyPath' was defined in the Variables tab
+# Variable 'referenceDbAdminPassword' was defined in the Variables tab
+# Variable 'referenceDbAdminUser' was defined in the Variables tab
+# Variable 'referenceDbHost' was defined in the Variables tab
+# Variable 'referenceDbHostName' was defined in the Variables tab
+# Variable 'referenceDbHostPassword' was defined in the Variables tab
+# Variable 'referenceDbHostUser' was defined in the Variables tab
+# Variable 'referenceDbPort' was defined in the Variables tab
+# Variable 'referenceDbSid' was defined in the Variables tab
+# Variable 'referenceDbUserName' was defined in the Variables tab
+# Variable 'referenceDbUserPassword' was defined in the Variables tab
+# Variable 'remittanceSchema' was defined in the Variables tab
+# Variable 'schemaNames' was defined in the Variables tab
+# Variable 'schemaPasswords' was defined in the Variables tab
+# Variable 'scoPath' was defined in the Variables tab
+# Variable 'ScriptHomeDir' was defined in the Variables tab
+# Variable 'snapshotFolderName' was defined in the Variables tab
+# Variable 'sourceDbAdminPassword' was defined in the Variables tab
+# Variable 'sourceDbAdminUser' was defined in the Variables tab
+# Variable 'sourceDbHost' was defined in the Variables tab
+# Variable 'sourceDbHostName' was defined in the Variables tab
+# Variable 'sourceDbHostPassword' was defined in the Variables tab
+# Variable 'sourceDbHostUser' was defined in the Variables tab
+# Variable 'sourceDbPort' was defined in the Variables tab
+# Variable 'sourceDbSid' was defined in the Variables tab
+# Variable 'sourceDbUserName' was defined in the Variables tab
+# Variable 'sourceDbUserPassword' was defined in the Variables tab
+# Variable 'sourcePort' was defined in the Variables tab
+# Variable 'tagName' was defined in the Variables tab
+# Variable 'targetDbSnapshot' was defined in the Variables tab
+# Variable 'tempSchema' was defined in the Variables tab
+# Variable 'TFPath' was defined in the Variables tab
+# Variable 'transactionSchema' was defined in the Variables tab
+# Variable 'UpgradeCode' was defined in the Variables tab
+# Variable 'wixPath' was defined in the Variables tab
+# Variable 'wmsSchema' was defined in the Variables tab
+# Variable 'zipPath' was defined in the Variables tab
+name: $(BuildID)$(BuildDefinitionName)_$(Date:yyyyMMdd)$(Rev:.r)
+jobs:
+- job: Phase_1
+  displayName: Phase 1
+  timeoutInMinutes: 0
+  cancelTimeoutInMinutes: 1
+  pool:
+    name: PAYAXIS
+  steps:
+  - checkout: self
+    clean: true
+    persistCredentials: True
+  - task: CmdLine@1
+    name: CmdLine_2
+    displayName: Run set
+    inputs:
+      filename: set
+  - task: DeleteFiles@1
+    displayName: Delete files from $(Build.BinariesDirectory)
+    inputs:
+      SourceFolder: $(Build.BinariesDirectory)
+      Contents: '**'
+  - task: PowerShell@2
+    displayName: Copy Nuget Packages
+    inputs:
+      targetType: inline
+      script: >+
+        # Write your PowerShell commands here.
+
+
+        xcopy "$env:BUILD_SOURCESDIRECTORY\SuiteSource\PrivateNugets\*" "$env:AGENT_ROOTDIRECTORY\PrivateNugets\" /s /e /Y
+
+  - task: PowerShell@2
+    displayName: 'Copy product Private Nuget Packages '
+    inputs:
+      targetType: inline
+      script: >+
+        # Write your PowerShell commands here.
+
+
+        echo PrivateNugetDIR
+
+
+        echo y | $puttyPath\pscp -q -l cygwin -pw tpstps_1 -r -batch "$PrivateNugetDIR\PrivateNugets\DigitalBanking.1.0.1.nupkg" 192.168.4.143:"$env:AGENT_ROOTDIRECTORY\PrivateNugets"\
+
+  - task: PowerShell@2
+    displayName: clean task
+    enabled: False
+    inputs:
+      targetType: inline
+      script: >
+        # Write your PowerShell commands here.
+
+
+
+        cd C:\Nuget ; .\nuget.exe locals all -clear
+  - task: PowerShell@2
+    displayName: PowerShell Script
+    inputs:
+      targetType: inline
+      script: >-
+        if (-not(Test-Path -Path "SuiteSource/REST API/*.sln" -PathType Leaf)) {
+          Write-Host "REST API folder doesnot contains .sln file"
+          Write-Host "##vso[task.setvariable variable=apiExist]n"
+         }
+        else {
+          Write-Host "REST API folder contains .sln file"
+          Write-Host "##vso[task.setvariable variable=apiExist]y"
+         }
+        if (-not(Test-Path -Path "SuiteSource/Service Assemblies/*.sln" -PathType Leaf)) {
+          Write-Host "Service Assemblies folder doesnot contains .sln file"
+          Write-Host "##vso[task.setvariable variable=serviceExist]n"
+         }
+        else {
+          Write-Host "Service Assemblies folder contains .sln file"
+          Write-Host "##vso[task.setvariable variable=serviceExist]y"
+         }
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk '
+  - task: DotNetCoreCLI@2
+    displayName: dotnet restore REST API
+    condition: and(succeeded(), eq(variables['apiExist'],'y'))
+    inputs:
+      command: restore
+      projects: SuiteSource/REST API/*.sln
+      selectOrConfig: config
+      nugetConfigPath: SuiteSource/Iris.Main/Back Office/IrisSuite/Suite/.nuget/NuGet.Config
+      noCache: true
+  - task: DotNetCoreCLI@2
+    displayName: dotnet restore Services
+    condition: and(succeeded(), eq(variables['serviceExist'],'y'))
+    inputs:
+      command: restore
+      projects: SuiteSource/Service Assemblies/*.sln
+      nugetConfigPath: SuiteSource/Iris.Main/Back Office/.nuget/NuGet.Config
+      noCache: true
+  - task: DotNetCoreCLI@2
+    displayName: dotnet  build
+    condition: and(succeeded(), eq(variables['apiExist'],'y'))
+    enabled: False
+    inputs:
+      command: publish
+      projects: SuiteSource/REST API/*.sln
+      zipAfterPublish: false
+      modifyOutputPath: false
+      selectOrConfig: config
+      nugetConfigPath: 'SuiteSource/REST API/TPS.Custom.Money.Customer/NuGet.Config '
+      noCache: true
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet  build '
+    condition: and(succeeded(), eq(variables['apiExist'],'y'))
+    inputs:
+      projects: SuiteSource/REST API/*.sln
+      selectOrConfig: config
+      nugetConfigPath: 'SuiteSource/REST API/TPS.Custom.Money.Customer/NuGet.Config '
+      noCache: true
+  - task: DotNetCoreCLI@2
+    displayName: dotnet  build Services
+    enabled: False
+    inputs:
+      projects: SuiteSource/Service Assemblies/*.sln
+      selectOrConfig: config
+      nugetConfigPath: 'SuiteSource/REST API/TPS.Custom.Money.Customer/NuGet.Config '
+      noCache: true
+  - task: DotNetCoreCLI@2
+    displayName: dotnet  publish
+    enabled: False
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: SuiteSource/*.sln
+      arguments: ' -o $(Build.BinariesDirectory)/published '
+      zipAfterPublish: false
+      selectOrConfig: config
+      nugetConfigPath: 'SuiteSource/REST API/TPS.Custom.Money.Customer/NuGet.Config '
+      noCache: true
+  - task: PowerShell@2
+    displayName: PowerShell Script
+    condition: and(succeeded(), eq(variables['apiExist'],'y'))
+    inputs:
+      targetType: inline
+      script: "Get-ChildItem 'SuiteSource\\REST API\\*' -Include *.sln\nGet-ChildItem 'SuiteSource\\REST API\\*' -Include *.sln | \nForeach-Object {\n    $slnName = $_.BaseName\n    Write-Host \"##[command] Building solution $slnName\"\n    Write-Host \"_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_\"\n    dotnet build $_ -o $env:BUILD_BINARIESDIRECTORY\\$slnName\n    dotnet publish $_ -o $env:BUILD_BINARIESDIRECTORY\\$slnName \n}"
+  - task: PowerShell@2
+    displayName: PowerShell Script Services
+    condition: and(succeeded(), eq(variables['serviceExist'],'y'))
+    inputs:
+      targetType: inline
+      script: "Get-ChildItem 'SuiteSource\\Service Assemblies\\*' -Include *.sln | \nForeach-Object {\n    $slnName = $_.BaseName\n    Write-Host \"##[command] Building solution $slnName\"\n    Write-Host \"_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_\"\n    dotnet build $_ -o $env:BUILD_BINARIESDIRECTORY\\IRIS.Services\n    dotnet publish $_ -o $env:BUILD_BINARIESDIRECTORY\\IRIS.Services \n}"
+  - task: CmdLine@2
+    displayName: Assembling
+    inputs:
+      script: >
+        md "%BUILD_ARTIFACTSTAGINGDIRECTORY%\IRIS_WEB_PROJECT"
+
+        xcopy "%BUILD_BINARIESDIRECTORY%\*" "%BUILD_ARTIFACTSTAGINGDIRECTORY%"\IRIS_WEB_PROJECT\ /s /e /Y
+  - task: VSBuild@1
+    displayName: Build TPS.Custom.Alert.sln copy
+    enabled: False
+    inputs:
+      solution: SuiteSource/*.sln
+      vsVersion: 16.0
+      msbuildArgs: /p:OutputPath="$(BUILD.BINARIESDIRECTORY)\$(PROJECTNAME)" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+      msbuildArchitecture: x64
+  - task: VSBuild@1
+    name: VSBuild_4
+    displayName: Build TPS.Custom.Alert.sln
+    enabled: False
+    inputs:
+      solution: SuiteSource/TPS.Custom.Alert.sln
+      vsVersion: 16.0
+      msbuildArgs: /p:OutputPath="$(BUILD.BINARIESDIRECTORY)" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+      msbuildArchitecture: x64
+  - task: VSBuild@1
+    displayName: Build TPS.Custom.Money.Customer.sln
+    enabled: False
+    inputs:
+      solution: SuiteSource/TPS.Custom.Money.Customer.sln
+      vsVersion: 16.0
+      msbuildArgs: /p:OutputPath="$(BUILD.BINARIESDIRECTORY)" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+      msbuildArchitecture: x64
+  - task: VSBuild@1
+    displayName: Build TPS.Custom.Money.MinorRegistration.sln
+    enabled: False
+    inputs:
+      solution: SuiteSource/TPS.Custom.Money.MinorRegistration.sln
+      vsVersion: 16.0
+      msbuildArgs: /p:OutputPath="$(BUILD.BINARIESDIRECTORY)" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+      msbuildArchitecture: x64
+  - task: VSBuild@1
+    displayName: Build TPS.Custom.Money.Registration.sln
+    enabled: False
+    inputs:
+      solution: SuiteSource/TPS.Custom.Money.Registration.sln
+      vsVersion: 16.0
+      msbuildArgs: /p:OutputPath="$(BUILD.BINARIESDIRECTORY)" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+      msbuildArchitecture: x64
+  - task: VSBuild@1
+    displayName: Build TPS.Custom.Money.Statement.sln
+    enabled: False
+    inputs:
+      solution: SuiteSource/TPS.Custom.Money.Statement.sln
+      vsVersion: 16.0
+      msbuildArgs: /p:OutputPath="$(BUILD.BINARIESDIRECTORY)" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+      msbuildArchitecture: x64
+  - task: VSBuild@1
+    displayName: Build TPS.MM.Custom.Transaction.sln
+    enabled: False
+    inputs:
+      solution: SuiteSource/TPS.MM.Custom.Transaction.sln
+      vsVersion: 16.0
+      msbuildArgs: /p:OutputPath="$(BUILD.BINARIESDIRECTORY)" /p:RunCodeAnalysis=false /m
+      restoreNugetPackages: true
+      msbuildArchitecture: x64
+  - task: BatchScript@1
+    name: BatchScript_10
+    displayName: Suite Assembling
+    enabled: False
+    inputs:
+      filename: CI_CD/Utilities/Assemble.bat
+      modifyEnvironment: false
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: IRIS_WEB_PROJECT'
+    inputs:
+      ArtifactName: IRIS_WEB_PROJECT
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Database Artifact
+    inputs:
+      PathtoPublish: $(BUILD.SOURCESDIRECTORY)\Database
+      ArtifactName: ProjectDatabase
+...
